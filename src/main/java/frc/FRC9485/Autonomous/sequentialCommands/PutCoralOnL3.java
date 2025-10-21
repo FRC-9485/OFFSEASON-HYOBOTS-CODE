@@ -1,8 +1,7 @@
 package frc.FRC9485.Autonomous.sequentialCommands;
 
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.level.intake.SetIntakeSpeed;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.Mechanism.SuperStructure;
 import frc.robot.subsystems.Mechanism.SuperStructure.StatesToScore;
 import frc.robot.subsystems.Mechanism.intake.IntakeSubsystem;
@@ -17,7 +16,10 @@ public class PutCoralOnL3 extends SequentialCommandGroup{
         this.superStructure = superStructure;
 
         addCommands(
-            superStructure.scorePieceOnLevel(StatesToScore.L3).onlyIf(() -> intakeSubsystem.IsTouched())
+            superStructure.scorePieceOnLevel(StatesToScore.L3).until(() -> superStructure.scoreIsFinised()),
+            new WaitCommand(1.7),
+            new ThrowAndCatchCoral(intakeSubsystem, superStructure)
         );
+
     }
 }

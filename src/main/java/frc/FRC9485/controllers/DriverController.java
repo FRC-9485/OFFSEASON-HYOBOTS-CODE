@@ -122,44 +122,44 @@ public class DriverController implements IDDriverController{
     @Override
     public double getLeftX(){
         if(TurboMode()){
-            return -controller.getLeftX();
+            return getPerformByAlliance(-controller.getLeftX());
         } else if(slowMode()){
-            return -controller.getLeftX() * 0.2;
+            return getPerformByAlliance(-controller.getLeftX()) * 0.2;
         } else{
-            return -controller.getLeftX() * 0.6;
+            return getPerformByAlliance(-controller.getLeftX()) * 0.6;
         }
     }
 
     @Override
     public double getLeftY(){
         if(TurboMode()){
-            return -controller.getLeftY();
+            return getPerformByAlliance(-controller.getLeftY());
         } else if(slowMode()){
-            return -controller.getLeftY() * 0.2;
+            return getPerformByAlliance(-controller.getLeftY())* 0.2;
         } else{
-            return -controller.getLeftY() * 0.6;
+            return getPerformByAlliance(-controller.getLeftY()) * 0.6;
         }
     }
 
     @Override
     public double getRightX(){
         if(TurboMode()){
-            return controller.getRightX();
+            return getPerformByAlliance(controller.getRightX());
         } else if(slowMode()){
-            return controller.getRightX() * 0.2;
+            return getPerformByAlliance(controller.getRightX())* 0.2;
         } else{
-            return controller.getRightX() * 0.6;
+            return getPerformByAlliance(controller.getRightX()) * 0.6;
         }
     }
 
     @Override
     public double getRightY(){
         if(TurboMode()){
-            return controller.getRightY();
+            return getPerformByAlliance(controller.getRightY());
         } else if(slowMode()){
-            return controller.getRightY() * 0.2;
+            return getPerformByAlliance(controller.getRightY())* 0.2;
         } else{
-            return controller.getRightY() * 0.6;
+            return getPerformByAlliance(controller.getRightY()) * 0.6;
         }
     }
 
