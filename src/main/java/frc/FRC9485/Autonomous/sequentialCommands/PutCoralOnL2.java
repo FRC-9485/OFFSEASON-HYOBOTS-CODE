@@ -17,7 +17,7 @@ public class PutCoralOnL2 extends SequentialCommandGroup{
 
         addCommands(
             superStructure.scorePieceOnLevel(StatesToScore.L2).until(() -> superStructure.scoreIsFinised()),
-            new WaitCommand(1),
+            new WaitCommand(10),
             new ThrowAndCatchCoral(intakeSubsystem, superStructure)
         );
 

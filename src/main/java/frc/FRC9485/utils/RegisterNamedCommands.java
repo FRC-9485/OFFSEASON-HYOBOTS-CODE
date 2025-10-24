@@ -89,6 +89,10 @@ public class RegisterNamedCommands {
         NamedCommands.registerCommand("RESET ODOMETRY CENTER AUTO", new InstantCommand(() ->{
             swerve.resetOdometry(new Pose2d(0, 0, new Rotation2d(0)));
         }));
+
+        NamedCommands.registerCommand("RESET ODOMETRY", new InstantCommand(() ->{
+            swerve.resetOdometry(new Pose2d(7.972, 3.803, new Rotation2d(180)));
+        }));
     }
 
     private void configureSubsystemsUtils(IntakeSubsystem intakeSubsystem){

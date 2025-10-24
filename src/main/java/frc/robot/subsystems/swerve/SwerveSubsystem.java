@@ -25,6 +25,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -61,6 +63,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   private CustomDoubleLog entradaX;
   private CustomDoubleLog entradaY;
   private CustomDoubleLog entradaRot;
+
+  private Field2d field2d;
 
   public static SwerveSubsystem mInstance = null;
 
@@ -123,6 +127,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     this.entradaRot = new CustomDoubleLog("swerve/rotation");
 
     this.swerveState = new SwerveState(direcaoX, direcaoY, rotacao, isMoving);
+    this.field2d = new Field2d();
   }
 
   public static SwerveSubsystem getInstance(){
@@ -164,6 +169,10 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     }
   
     this.automaticSwerveMode();
+
+    field2d.setRobotPose(getPose());
+
+    SmartDashboard.putData(field2d);
   }
   
   @Override
@@ -229,8 +238,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
                     swerveDrive.setChassisSpeeds(speeds);
                     }}, 
                     new PPHolonomicDriveController(
-                    new PIDConstants(0.15, 0.0, 0.0), 
-                    new PIDConstants(0.6, 0.0, 0.0)),
+                    new PIDConstants(0.003, 0.0, 0.01), 
+                    new PIDConstants(0.005, 0.0, 0.003)),
                     config, 
                     () -> {
                         var alliance = DriverStation.getAlliance();
