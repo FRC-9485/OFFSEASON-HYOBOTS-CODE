@@ -5,9 +5,33 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RESET ODOMETRY CENTER AUTO"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RESET PIGEON"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Example Path"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "STOP SWERVE"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
           }
         },
         {

@@ -24,7 +24,6 @@ public class SuperStructure extends SubsystemBase{
 
     private String state;
     private Color color;
-    private boolean isFinished;
 
     public static SuperStructure mInstance = null;
 
@@ -38,7 +37,6 @@ public class SuperStructure extends SubsystemBase{
 
         this.color = Color.kBlack;
         this.state = "INITIAL STATE";
-        this.isFinished = intakeSubsystem.atSetpoint() && elevatorSubsystem.atSetpoint();
     }
 
     public static SuperStructure getInstance(){

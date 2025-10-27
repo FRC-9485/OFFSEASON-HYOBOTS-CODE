@@ -2,29 +2,31 @@ package frc.robot.subsystems.swerve;
 
 import java.io.File;
 import java.util.function.DoubleSupplier;
+
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.controllers.PPLTVController;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,7 +39,6 @@ import frc.robot.subsystems.vision.LimelightConfig;
 import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
-import edu.wpi.first.math.trajectory.Trajectory;
 
 public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
@@ -63,6 +64,14 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   private CustomDoubleLog entradaX;
   private CustomDoubleLog entradaY;
   private CustomDoubleLog entradaRot;
+
+  private CANcoder m1;
+  private CANcoder m2;
+  private CANcoder m3;
+  private CANcoder m4;
+
+  private SwerveDriveOdometry odometry;
+  private SwerveDriveKinematics kinematics;
 
   private Field2d field2d;
 
@@ -102,6 +111,11 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
       this.swerveDrivePoseEstimator = null;
     }
 
+    this.m1 = new CANcoder(10);
+    this.m2 = new CANcoder(11);
+    this.m3 = new CANcoder(12);
+    this.m4 = new CANcoder(13);
+
     xPID = new PIDController(0.1, 0, 0);
     yPID = new PIDController(0.1, 0, 0);
     profilePid = new ProfiledPIDController(0.1, 0.0, 0,
@@ -128,6 +142,15 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
     this.swerveState = new SwerveState(direcaoX, direcaoY, rotacao, isMoving);
     this.field2d = new Field2d();
+
+    this.kinematics = new SwerveDriveKinematics(
+      new Translation2d(0.356, 0.356),
+      new Translation2d(0.356, -0.356),
+      new Translation2d(-0.356, 0.356),
+      new Translation2d(-0.356, -0.356)
+    );
+
+    this.odometry = new SwerveDriveOdometry(kinematics, pigeon.getRotation2d(), swerveDrive.getModulePositions());
   }
 
   public static SwerveSubsystem getInstance(){
@@ -146,7 +169,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   public void periodic() {
     if (swerveDrive != null) {
       try {
-        swerveDrive.updateOdometry();
+        odometry.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
       } catch (Exception e) {
         e.printStackTrace();
         DriverStation.reportError("Erro em updateOdometry(): " + e.getMessage(), false);
@@ -157,10 +180,10 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   
     if (swerveDrivePoseEstimator != null && pigeon != null && swerveDrive != null) {
       try {
-        swerveDrivePoseEstimator.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
+        // swerveDrivePoseEstimator.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
         if (limelightConfig != null && limelightConfig.getHasTarget()) {
-          Pose2d poseEstimated = limelightConfig.getEstimatedGlobalPose();
-          swerveDrivePoseEstimator.addVisionMeasurement(poseEstimated, Timer.getFPGATimestamp());
+          // Pose2d poseEstimated = limelightConfig.getEstimatedGlobalPose();
+          // swerveDrivePoseEstimator.addVisionMeasurement(poseEstimated, Timer.getFPGATimestamp());
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -173,6 +196,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     field2d.setRobotPose(getPose());
 
     SmartDashboard.putData(field2d);
+    System.out.println("pose do robo em X: " + odometry.getPoseMeters().getX() * 0.32);
+    System.out.println("\npose do robo em Y: " + odometry.getPoseMeters().getY());
   }
   
   @Override
@@ -220,17 +245,17 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
         try{
             config = RobotConfig.fromGUISettings();
             
-            boolean feedforwards = true;
+            boolean feedforwards = false;
             
             AutoBuilder.configure(
                 this::getPose,
                 this::resetOdometry, 
-                this::getRobotRelativeSpeeds, 
+                this::getRobotRelativeSpeeds,
                 (speeds, feedforward) -> {
                     if (feedforwards) {
                     swerveDrive.drive(
                         speeds,
-                        swerveDrive.kinematics.toSwerveModuleStates(speeds),
+                        kinematics.toSwerveModuleStates(speeds),
                         feedforward.linearForces()
                     );
                     } else
@@ -238,13 +263,13 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
                     swerveDrive.setChassisSpeeds(speeds);
                     }}, 
                     new PPHolonomicDriveController(
-                    new PIDConstants(0.003, 0.0, 0.01), 
+                    new PIDConstants(0.004, 0.0, 0.012), 
                     new PIDConstants(0.005, 0.0, 0.003)),
                     config, 
                     () -> {
                         var alliance = DriverStation.getAlliance();
                         if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
+                          return alliance.get() == Alliance.Red;
                         }
                         return false;
                 },
@@ -396,8 +421,10 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   }
   
   @Override
-  public void stopSwerve(){
-    this.driveFieldOriented(new ChassisSpeeds());
+  public Command stopSwerve(){
+    return run(() ->{
+      swerveDrive.drive(new ChassisSpeeds(0, 0, 0));
+    });
   }
 
   public Rotation2d getGyroAccum(){
@@ -475,5 +502,35 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   
   public boolean atReference() {
     return xPID.atSetpoint() && yPID.atSetpoint() && profilePid.atGoal();
+  }
+
+  @Override
+  public boolean swerveIsStoped(){
+    return m1.getVelocity().getValueAsDouble() == 0 &&
+    m2.getVelocity().getValueAsDouble() == 0 &&
+    m3.getVelocity().getValueAsDouble() == 0 &&
+    m4.getVelocity().getValueAsDouble() == 0;
+  }
+
+  @Override
+  public void setState(SwerveModuleState[] state) {
+    for(int i = 0; i < module.length; i++){
+      module[i].setDesiredState(state[i], true, true);
+    }
+  }
+
+  @Override
+  public Command putSwerveIn0() {
+    return run(() ->{
+      double speed = 0.01;
+        SwerveModuleState[] state = new SwerveModuleState[]{
+          new SwerveModuleState(speed, new Rotation2d(0)),
+          new SwerveModuleState(speed, new Rotation2d(0)),
+          new SwerveModuleState(speed, new Rotation2d(0)),
+          new SwerveModuleState(speed, new Rotation2d(0)),
+        };
+  
+        setState(state);
+    });
   }
 }

@@ -57,6 +57,7 @@ public class RegisterNamedCommands {
         NamedCommands.registerCommand("L2", new PutCoralOnL2(intakeSubsystem, superStructure));
         NamedCommands.registerCommand("L3", new PutCoralOnL3(intakeSubsystem, superStructure)); 
         NamedCommands.registerCommand("L4", new PutCoralOnL4(superStructure, intakeSubsystem));
+        NamedCommands.registerCommand("STOP SWERVE", swerve.stopSwerve().until(() -> swerve.swerveIsStoped()));
         NamedCommands.registerCommand("JOGAR CORAL", new ThrowAndCatchCoral(intakeSubsystem, superStructure));
     }
 
@@ -87,12 +88,14 @@ public class RegisterNamedCommands {
         NamedCommands.registerCommand("RESET ELEVATOR", elevatorSubsystem.resetElevator().until(() -> elevatorSubsystem.getDistance() >= 0.0001));
 
         NamedCommands.registerCommand("RESET ODOMETRY CENTER AUTO", new InstantCommand(() ->{
-            swerve.resetOdometry(new Pose2d(0, 0, new Rotation2d(0)));
+            swerve.resetOdometry(new Pose2d(7.852, 3.827, new Rotation2d(-179.761)));
         }));
 
         NamedCommands.registerCommand("RESET ODOMETRY", new InstantCommand(() ->{
             swerve.resetOdometry(new Pose2d(7.972, 3.803, new Rotation2d(180)));
         }));
+
+        NamedCommands.registerCommand("TURN IN 0", swerve.putSwerveIn0().until(() -> swerve.swerveIsStoped()));
     }
 
     private void configureSubsystemsUtils(IntakeSubsystem intakeSubsystem){

@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.swerve.SwerveSubsystem.SwerveState;
 import swervelib.SwerveDrive;
@@ -29,7 +30,7 @@ public interface SwerveIO {
 
     void setMotorBrake(boolean brake);
 
-    void stopSwerve();
+    Command stopSwerve();
 
     Command alternDriveCommand(DoubleSupplier x, DoubleSupplier y, DoubleSupplier rotation, boolean clossedLoop);
 
@@ -52,4 +53,10 @@ public interface SwerveIO {
     SwerveDrivePoseEstimator getPoseEstimator();
 
     SwerveState getState();
+
+    boolean swerveIsStoped();
+
+    void setState(SwerveModuleState[] state);
+
+    Command putSwerveIn0();
 }

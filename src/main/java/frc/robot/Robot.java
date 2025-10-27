@@ -1,7 +1,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.net.WebServer;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -43,14 +42,13 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {}
 
   @Override
-  public void autonomousInit() {;
+  public void autonomousInit() {
     m_robotContainer.setMotorBrake(true);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
   }
 
   @Override
@@ -67,7 +65,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
+    System.out.println("aliiança: " + DriverStation.getAlliance().get());
   }
 
   @Override
