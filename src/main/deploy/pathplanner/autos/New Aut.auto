@@ -11,12 +11,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "RESET PIGEON"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Example Path"
@@ -26,18 +20,6 @@
           "type": "named",
           "data": {
             "name": "STOP SWERVE"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "L2"
           }
         }
       ]

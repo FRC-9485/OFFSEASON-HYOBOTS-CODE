@@ -1,6 +1,6 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -11,6 +11,7 @@ import frc.FRC9485.controllers.MechanismKeyBoard;
 import frc.FRC9485.utils.RegisterNamedCommands;
 import frc.FRC9485.utils.JoystickChooser.JoystickChooser;
 import frc.robot.Constants.Components;
+import frc.robot.Constants.Controllers;
 import frc.robot.commands.level.intake.SetIntakeSpeed;
 import frc.robot.commands.swerveUtils.AlingToTarget;
 import frc.robot.commands.swerveUtils.ResetPigeon;
@@ -53,10 +54,10 @@ public class RobotContainer {
     this.mechanismSelected = joystickChooser.getSelected();
 
     swerve.setDefaultCommand(swerve.driveRobot(
-      () -> driverController.getLeftY(),
-      () -> driverController.getLeftX(),
-      () -> driverController.getRightX(),
-      frc.robot.Constants.swerve.FIELD_ORIENTED
+    () -> MathUtil.applyDeadband(driverController.getLeftY(), Controllers.DEADBAND), 
+    () -> MathUtil.applyDeadband(driverController.getLeftX(), Controllers.DEADBAND), 
+    () -> MathUtil.applyDeadband(driverController.getRightX(), Controllers.DEADBAND), 
+    frc.robot.Constants.swerve.FIELD_ORIENTED
     ));
 
     if(mechanismSelected == "joystick"){

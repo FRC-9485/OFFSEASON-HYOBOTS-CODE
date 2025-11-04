@@ -59,4 +59,6 @@ public interface SwerveIO {
     void setState(SwerveModuleState[] state);
 
     Command putSwerveIn0();
+
+    Pose2d getSidePose();
 }

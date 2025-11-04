@@ -3,11 +3,14 @@ package frc.FRC9485.utils;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL2;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL3;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL4;
+import frc.FRC9485.Autonomous.sequentialCommands.ResetOdometry;
 import frc.FRC9485.Autonomous.sequentialCommands.ThrowAndCatchCoral;
 import frc.robot.commands.level.intake.SetIntakeSpeed;
 import frc.robot.commands.swerveUtils.AlingToTarget;
@@ -87,9 +90,7 @@ public class RegisterNamedCommands {
 
         NamedCommands.registerCommand("RESET ELEVATOR", elevatorSubsystem.resetElevator().until(() -> elevatorSubsystem.getDistance() >= 0.0001));
 
-        NamedCommands.registerCommand("RESET ODOMETRY CENTER AUTO", new InstantCommand(() ->{
-            swerve.resetOdometry(new Pose2d(7.852, 3.827, new Rotation2d(-179.761)));
-        }));
+        NamedCommands.registerCommand("RESET ODOMETRY CENTER AUTO", new ResetOdometry(swerve.getSidePose()));
 
         NamedCommands.registerCommand("RESET ODOMETRY", new InstantCommand(() ->{
             swerve.resetOdometry(new Pose2d(7.972, 3.803, new Rotation2d(180)));

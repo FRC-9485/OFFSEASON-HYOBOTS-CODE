@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.852,
-        "y": 3.8272028688524586
+        "x": 10.226,
+        "y": 3.8511782786885242
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.986033037731436,
-        "y": 3.8235906079467448
+        "x": 9.858320610911388,
+        "y": 3.857488850586528
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.706147540983607,
-        "y": 3.8032274590163935
+        "x": 11.891803278688524,
+        "y": 3.815215163934426
       },
       "prevControl": {
-        "x": 5.315674654032142,
-        "y": 3.797693855299192
+        "x": 12.14890409146617,
+        "y": 3.811806073194269
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,12 +33,6 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "RESET PIGEON",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
       "name": "RESET ODOMETRY CENTER AUTO",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
@@ -47,12 +41,6 @@
     {
       "name": "STOP SWERVE",
       "waypointRelativePos": 0.8966914247130329,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "L2",
-      "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -67,13 +55,13 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0.5,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

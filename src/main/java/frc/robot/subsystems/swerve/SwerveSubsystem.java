@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -36,6 +37,7 @@ import frc.FRC9485.utils.logger.CustomBooleanLog;
 import frc.FRC9485.utils.logger.CustomDoubleLog;
 import frc.robot.Constants.swerve;
 import frc.robot.subsystems.vision.LimelightConfig;
+import frc.robot.subsystems.vision.LimelightHelpers;
 import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
@@ -182,8 +184,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
       try {
         // swerveDrivePoseEstimator.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
         if (limelightConfig != null && limelightConfig.getHasTarget()) {
-          // Pose2d poseEstimated = limelightConfig.getEstimatedGlobalPose();
-          // swerveDrivePoseEstimator.addVisionMeasurement(poseEstimated, Timer.getFPGATimestamp());
+          Pose2d poseEstimated = LimelightHelpers.getBotPose2d("");
+          swerveDrivePoseEstimator.addVisionMeasurement(poseEstimated, Timer.getFPGATimestamp());
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -198,6 +200,11 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     SmartDashboard.putData(field2d);
     System.out.println("pose do robo em X: " + odometry.getPoseMeters().getX() * 0.32);
     System.out.println("\npose do robo em Y: " + odometry.getPoseMeters().getY());
+
+    SmartDashboard.putNumber("front right", m2.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber("front left", m1.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber("back right", m3.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber("back left", m4.getAbsolutePosition().getValueAsDouble());
   }
   
   @Override
@@ -210,21 +217,23 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public void automaticSwerveMode(){
-    boolean moving = swerveIsMoving();
-
-    if (moving) {
-      swerveIsMoving.append(true);
-      this.lastMovingTime = Timer.getFPGATimestamp();
-      if (this.currentIdleMode != IdleMode.kCoast) {
-        if (swerveDrive != null) swerveDrive.setMotorIdleMode(false); 
-        this.currentIdleMode = IdleMode.kCoast;
-      }
-    } else {
-      swerveIsMoving.append(false);
-      if (Timer.getFPGATimestamp() - lastMovingTime > 1.0) {
-        if (this.currentIdleMode != IdleMode.kBrake) {
-          if (swerveDrive != null) swerveDrive.setMotorIdleMode(true);
-          this.currentIdleMode = IdleMode.kBrake;
+    if(DriverStation.isTeleop()){
+      boolean moving = swerveIsMoving();
+  
+      if (moving) {
+        swerveIsMoving.append(true);
+        this.lastMovingTime = Timer.getFPGATimestamp();
+        if (this.currentIdleMode != IdleMode.kCoast) {
+          if (swerveDrive != null) swerveDrive.setMotorIdleMode(false); 
+          this.currentIdleMode = IdleMode.kCoast;
+        }
+      } else {
+        swerveIsMoving.append(false);
+        if (Timer.getFPGATimestamp() - lastMovingTime > 1.0) {
+          if (this.currentIdleMode != IdleMode.kBrake) {
+            if (swerveDrive != null) swerveDrive.setMotorIdleMode(true);
+            this.currentIdleMode = IdleMode.kBrake;
+          }
         }
       }
     }
@@ -267,23 +276,24 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
                     new PIDConstants(0.005, 0.0, 0.003)),
                     config, 
                     () -> {
+                      //lugar onde esta dando errado
                         var alliance = DriverStation.getAlliance();
                         if (alliance.isPresent()) {
-                          return alliance.get() == Alliance.Red;
-                        }
+                          return alliance.get() == Alliance.Red && alliance.get() == Alliance.Blue;
+                        } 
                         return false;
                 },
                 this 
                 );
                 } catch (Exception e) {
-                e.printStackTrace();
+                  DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
                 }
         }
 
 
   @Override
   public Pose2d getPose(){
-    return swerveDrive.getPose();
+    return swerveDrivePoseEstimator.getEstimatedPosition();
   }
 
   @Override
@@ -301,6 +311,14 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   public Command alternDriveCommand(DoubleSupplier X, DoubleSupplier Y, DoubleSupplier rotation) {
     return alternDriveCommand(X, Y, rotation, true); // Usa malha fechada por padrão
   }
+
+  public Pose2d getSidePose(){
+    if(DriverStation.getAlliance().get() == Alliance.Red){
+      return new Pose2d(7.852, 3.827, Rotation2d.fromDegrees(179.93));
+    } else{
+      return new Pose2d(10.226, 3.851, Rotation2d.fromDegrees(180));
+    }
+  }
   
   /**
    * Comando de direção com opção de escolher entre malha aberta ou fechada
@@ -312,46 +330,45 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
    */
   @Override
   public Command alternDriveCommand(DoubleSupplier X, DoubleSupplier Y, DoubleSupplier rotation, boolean useClosedLoop) {
-    // return run(() -> {
-    //   double xController = Math.pow(xLimiter.calculate(X.getAsDouble()), 3);
-    //   double yController = Math.pow(yLimiter.calculate(Y.getAsDouble()), 3);
-    //   double rotationValue = rotationLimiter.calculate(rotation.getAsDouble());
-    //   Rotation2d rotation2d = Rotation2d.fromDegrees(0.0);
-    //   if (swerveDrivePoseEstimator != null) {
-    //     rotation2d = swerveDrivePoseEstimator.getEstimatedPosition().getRotation();
-    //   }
+    return run(() -> {
+      double xController = Math.pow(X.getAsDouble(), 3);
+      double yController = Math.pow(Y.getAsDouble(), 3);
+      double rotationValue = rotation.getAsDouble();
+      Rotation2d rotation2d = Rotation2d.fromDegrees(0.0);
+      if (swerveDrivePoseEstimator != null) {
+        rotation2d = swerveDrivePoseEstimator.getEstimatedPosition().getRotation();
+      }
       
-    //   ChassisSpeeds targetSpeeds = swerveDrive.swerveController.getTargetSpeeds(
-    //       xController, 
-    //       yController, 
-    //       rotationValue, 
-    //       getGyroAccum().getRadians(), 
-    //       swerve.MAX_SPEED);
+      ChassisSpeeds targetSpeeds = swerveDrive.swerveController.getTargetSpeeds(
+          xController, 
+          yController, 
+          rotationValue, 
+          getGyroAccum().getRadians(), 
+          swerve.MAX_SPEED);
       
-    //       if (useClosedLoop) {
-    //         Pose2d currentPose = getPose();
-    //         double dt = 0.02;
+          if (useClosedLoop) {
+            Pose2d currentPose = getPose();
+            double dt = 0.02;
           
-    //         Pose2d desiredPose = new Pose2d(
-    //             currentPose.getX() + targetSpeeds.vxMetersPerSecond * dt,
-    //             currentPose.getY() + targetSpeeds.vyMetersPerSecond * dt,
-    //             currentPose.getRotation().plus(new Rotation2d(targetSpeeds.omegaRadiansPerSecond * dt)));
+            Pose2d desiredPose = new Pose2d(
+                currentPose.getX() + targetSpeeds.vxMetersPerSecond * dt,
+                currentPose.getY() + targetSpeeds.vyMetersPerSecond * dt,
+                currentPose.getRotation().plus(new Rotation2d(targetSpeeds.omegaRadiansPerSecond * dt)));
           
-    //         Trajectory.State desiredState = new Trajectory.State();
-    //         desiredState.poseMeters = desiredPose;
-    //         desiredState.velocityMetersPerSecond =
-    //             Math.hypot(targetSpeeds.vxMetersPerSecond, targetSpeeds.vyMetersPerSecond);
+            Trajectory.State desiredState = new Trajectory.State();
+            desiredState.poseMeters = desiredPose;
+            desiredState.velocityMetersPerSecond =
+                Math.hypot(targetSpeeds.vxMetersPerSecond, targetSpeeds.vyMetersPerSecond);
           
-    //         Rotation2d desiredRotation = desiredPose.getRotation();
+            Rotation2d desiredRotation = desiredPose.getRotation();
           
-    //         ChassisSpeeds adjustedSpeeds = driveController.calculate(currentPose, desiredState, desiredRotation);
+            ChassisSpeeds adjustedSpeeds = driveController.calculate(currentPose, desiredState, desiredRotation);
           
-    //         driveFieldOriented(adjustedSpeeds);
-    //       } else {
-    //         driveFieldOriented(targetSpeeds);
-    //       }
-    // });
-    return Commands.none();
+            driveFieldOriented(adjustedSpeeds);
+          } else {
+            driveFieldOriented(targetSpeeds);
+          }
+    });
   }
 
   /**
@@ -451,7 +468,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public void resetOdometry(Pose2d pose){
-   swerveDrive.resetOdometry(pose);
+    swerveDrivePoseEstimator.resetPosition(pigeon.getRotation2d(), swerveDrive.getModulePositions(), pose);
   }
 
   @Override

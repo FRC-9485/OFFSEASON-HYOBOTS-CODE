@@ -122,22 +122,22 @@ public class DriverController implements IDDriverController{
     @Override
     public double getLeftX(){
         if(TurboMode()){
-            return getPerformByAlliance(-controller.getLeftX());
+            return getPerformByAlliance(controller.getLeftX());
         } else if(slowMode()){
-            return getPerformByAlliance(-controller.getLeftX()) * 0.2;
+            return getPerformByAlliance(controller.getLeftX()) * 0.2;
         } else{
-            return getPerformByAlliance(-controller.getLeftX()) * 0.6;
+            return getPerformByAlliance(controller.getLeftX()) * 0.6;
         }
     }
 
     @Override
     public double getLeftY(){
         if(TurboMode()){
-            return getPerformByAlliance(-controller.getLeftY());
+            return getPerformByAlliance(controller.getLeftY());
         } else if(slowMode()){
-            return getPerformByAlliance(-controller.getLeftY())* 0.2;
+            return getPerformByAlliance(controller.getLeftY())* 0.2;
         } else{
-            return getPerformByAlliance(-controller.getLeftY()) * 0.6;
+            return getPerformByAlliance(controller.getLeftY()) * 0.6;
         }
     }
 
