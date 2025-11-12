@@ -54,10 +54,10 @@ public class RobotContainer {
     this.mechanismSelected = joystickChooser.getSelected();
 
     swerve.setDefaultCommand(swerve.driveRobot(
-    () -> MathUtil.applyDeadband(driverController.getLeftY(), Controllers.DEADBAND), 
-    () -> MathUtil.applyDeadband(driverController.getLeftX(), Controllers.DEADBAND), 
-    () -> MathUtil.applyDeadband(driverController.getRightX(), Controllers.DEADBAND), 
-    frc.robot.Constants.swerve.FIELD_ORIENTED
+      () -> MathUtil.applyDeadband(driverController.getLeftY(), Controllers.DEADBAND), 
+      () -> MathUtil.applyDeadband(driverController.getLeftX(), Controllers.DEADBAND), 
+      () -> MathUtil.applyDeadband(driverController.getRightX(), Controllers.DEADBAND), 
+      frc.robot.Constants.swerve.FIELD_ORIENTED
     ));
 
     if(mechanismSelected == "joystick"){

@@ -3,14 +3,12 @@ package frc.FRC9485.utils;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import frc.FRC9485.Autonomous.sequentialCommands.CatchCoral;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL2;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL3;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL4;
-import frc.FRC9485.Autonomous.sequentialCommands.ResetOdometry;
 import frc.FRC9485.Autonomous.sequentialCommands.ThrowAndCatchCoral;
 import frc.robot.commands.level.intake.SetIntakeSpeed;
 import frc.robot.commands.swerveUtils.AlingToTarget;
@@ -20,17 +18,16 @@ import frc.robot.subsystems.Mechanism.SuperStructure;
 import frc.robot.subsystems.Mechanism.SuperStructure.StatesToScore;
 import frc.robot.subsystems.Mechanism.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.Mechanism.intake.IntakeSubsystem;
-import frc.robot.subsystems.swerve.SwerveIO;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 import frc.robot.subsystems.vision.LimelightConfig;
 
 public class RegisterNamedCommands {
 
-    private SwerveIO swerve;
+    private SwerveSubsystem swerve;
     private ElevatorSubsystem elevator;
     private IntakeSubsystem intake;
     private LimelightConfig limelightConfig;
-    private SuperStructure struct;
+    private SuperStructure struct;  
 
     public static RegisterNamedCommands mInstance = null;
 
@@ -61,6 +58,7 @@ public class RegisterNamedCommands {
         NamedCommands.registerCommand("L3", new PutCoralOnL3(intakeSubsystem, superStructure)); 
         NamedCommands.registerCommand("L4", new PutCoralOnL4(superStructure, intakeSubsystem));
         NamedCommands.registerCommand("STOP SWERVE", swerve.stopSwerve().until(() -> swerve.swerveIsStoped()));
+        NamedCommands.registerCommand("PEGAR CORAL", new CatchCoral(intakeSubsystem, superStructure));
         NamedCommands.registerCommand("JOGAR CORAL", new ThrowAndCatchCoral(intakeSubsystem, superStructure));
     }
 
@@ -80,7 +78,7 @@ public class RegisterNamedCommands {
         NamedCommands.registerCommand("SCORE ON PROCESSOR", struct.scorePieceOnLevel(StatesToScore.PROCESSOR));
     }
 
-    private void configureSwerveAutoCommands(SwerveIO swerve, LimelightConfig limelightConfig, ElevatorSubsystem elevatorSubsystem){
+    private void configureSwerveAutoCommands(SwerveSubsystem swerve, LimelightConfig limelightConfig, ElevatorSubsystem elevatorSubsystem){
 
         NamedCommands.registerCommand("RESET PIGEON", new ResetPigeon());
 
@@ -90,11 +88,11 @@ public class RegisterNamedCommands {
 
         NamedCommands.registerCommand("RESET ELEVATOR", elevatorSubsystem.resetElevator().until(() -> elevatorSubsystem.getDistance() >= 0.0001));
 
-        NamedCommands.registerCommand("RESET ODOMETRY CENTER AUTO", new ResetOdometry(swerve.getSidePose()));
-
         NamedCommands.registerCommand("RESET ODOMETRY", new InstantCommand(() ->{
             swerve.resetOdometry(new Pose2d(7.972, 3.803, new Rotation2d(180)));
         }));
+
+        NamedCommands.registerCommand("RESET TESTE", swerve.runResetOdometry(new Pose2d(7.564, 3.851, new Rotation2d(180))));
 
         NamedCommands.registerCommand("TURN IN 0", swerve.putSwerveIn0().until(() -> swerve.swerveIsStoped()));
     }

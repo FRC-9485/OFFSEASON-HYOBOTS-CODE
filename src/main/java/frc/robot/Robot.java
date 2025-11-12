@@ -6,7 +6,7 @@ import edu.wpi.first.net.WebServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -25,7 +25,8 @@ public class Robot extends TimedRobot {
   public void robotInit() {    
     m_robotContainer = new RobotContainer();
     CameraServer.startAutomaticCapture();
-    pigeon2.reset();
+
+    if(DriverStation.getAlliance().get() == Alliance.Blue) pigeon2.reset();
 
     WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
   }
@@ -44,12 +45,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_robotContainer.setMotorBrake(true);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_robotContainer.setMotorBrake(true);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    if(DriverStation.getAlliance().get() == Alliance.Blue) pigeon2.reset();
   }
 
   @Override

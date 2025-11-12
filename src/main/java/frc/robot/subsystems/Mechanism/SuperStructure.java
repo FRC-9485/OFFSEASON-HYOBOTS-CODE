@@ -198,6 +198,36 @@ public class SuperStructure extends SubsystemBase{
         });
     }
 
+    public Command scorePieceOnLevelAutonomous(StatesToScore stateToScore) {
+        return new Command() {
+            @Override
+            public void execute() {
+                if (stateToScore == StatesToScore.L1) {
+                    state = "L1 STATE";
+                    color = Color.kGreen;
+                    if(elevatorInput != ElevatorPositions.HOME) intakeInput = IntakePositions.ABERTURA_COMUMM;
+                    if(intakeSubsystem.atSetpoint()){
+                        elevatorInput = ElevatorPositions.HOME;
+                        if(elevatorSubsystem.atSetpoint() && intakeSubsystem.getSetpoint() == IntakePositions.ABERTURA_COMUMM){
+                            intakeInput = IntakePositions.DEFAULT_POSITION;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public boolean isFinished() {
+                return intakeSubsystem.atSetpoint() && elevatorSubsystem.atSetpoint();
+            }
+
+            @Override
+            public void end(boolean interrupted) {
+                intakeInput = 0;
+                elevatorInput = 0;
+            }
+        };
+    }
+
     public boolean HasGamePieceOnIntake(){
         return intakeSubsystem.hasCoralOnIntake();
     }

@@ -75,6 +75,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   private SwerveDriveOdometry odometry;
   private SwerveDriveKinematics kinematics;
 
+  private ChassisSpeeds discretize;
+
   private Field2d field2d;
 
   public static SwerveSubsystem mInstance = null;
@@ -152,7 +154,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
       new Translation2d(-0.356, -0.356)
     );
 
-    this.odometry = new SwerveDriveOdometry(kinematics, pigeon.getRotation2d(), swerveDrive.getModulePositions());
+    this.odometry = new SwerveDriveOdometry(kinematics, getHeading(), swerveDrive.getModulePositions());
   }
 
   public static SwerveSubsystem getInstance(){
@@ -258,7 +260,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
             
             AutoBuilder.configure(
                 this::getPose,
-                this::resetOdometry, 
+                this::resetOdometryAuto,
                 this::getRobotRelativeSpeeds,
                 (speeds, feedforward) -> {
                     if (feedforwards) {
@@ -279,21 +281,21 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
                       //lugar onde esta dando errado
                         var alliance = DriverStation.getAlliance();
                         if (alliance.isPresent()) {
-                          return alliance.get() == Alliance.Red && alliance.get() == Alliance.Blue;
+                          return alliance.get() == Alliance.Red;
                         } 
                         return false;
                 },
                 this 
                 );
+
                 } catch (Exception e) {
                   DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
                 }
         }
 
-
   @Override
   public Pose2d getPose(){
-    return swerveDrivePoseEstimator.getEstimatedPosition();
+    return odometry.getPoseMeters();
   }
 
   @Override
@@ -344,7 +346,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
           yController, 
           rotationValue, 
           getGyroAccum().getRadians(), 
-          swerve.MAX_SPEED);
+          swerve.MAX_SPEED
+        );
       
           if (useClosedLoop) {
             Pose2d currentPose = getPose();
@@ -408,7 +411,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
                                                                                       direcaoY,
                                                                                       rotacao);
 
-      ChassisSpeeds discretize = ChassisSpeeds.discretize(speed, td);
+      discretize = ChassisSpeeds.discretize(speed, td);
       state = swerveDrive.kinematics.toSwerveModuleStates(discretize);
       SwerveDriveKinematics.desaturateWheelSpeeds(state, swerve.MAX_SPEED);
       
@@ -468,7 +471,18 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public void resetOdometry(Pose2d pose){
-    swerveDrivePoseEstimator.resetPosition(pigeon.getRotation2d(), swerveDrive.getModulePositions(), pose);
+    odometry.resetPosition(pigeon.getRotation2d(), swerveDrive.getModulePositions(), pose);
+  }
+
+  public Command runResetOdometry(Pose2d pose2d){
+    return run(() ->{
+      resetOdometry(pose2d);
+    }).until(() -> swerveDrive.getPose() == pose2d);
+  }
+
+  public void resetOdometryAuto(Pose2d pose){
+    pigeon.setYaw(pose.getRotation().getDegrees());
+    odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
   }
 
   @Override
@@ -519,6 +533,10 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   
   public boolean atReference() {
     return xPID.atSetpoint() && yPID.atSetpoint() && profilePid.atGoal();
+  }
+
+  public ChassisSpeeds getRobotRelativeSpeed(){
+    return discretize;
   }
 
   @Override

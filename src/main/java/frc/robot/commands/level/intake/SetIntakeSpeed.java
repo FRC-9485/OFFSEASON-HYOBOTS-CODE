@@ -32,6 +32,7 @@ public class SetIntakeSpeed extends Command{
 
     @Override
     public void execute() {
+        System.out.println("pegando...");
         try{
             
         intake.setSpeed(speed);

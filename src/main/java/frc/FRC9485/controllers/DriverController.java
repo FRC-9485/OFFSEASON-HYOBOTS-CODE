@@ -144,22 +144,22 @@ public class DriverController implements IDDriverController{
     @Override
     public double getRightX(){
         if(TurboMode()){
-            return getPerformByAlliance(controller.getRightX());
+            return -controller.getRightX() ;
         } else if(slowMode()){
-            return getPerformByAlliance(controller.getRightX())* 0.2;
+            return -controller.getRightX() * 0.2;
         } else{
-            return getPerformByAlliance(controller.getRightX()) * 0.6;
+            return -controller.getRightX()  * 0.6;
         }
     }
 
     @Override
     public double getRightY(){
         if(TurboMode()){
-            return getPerformByAlliance(controller.getRightY());
+            return -controller.getRightY();
         } else if(slowMode()){
-            return getPerformByAlliance(controller.getRightY())* 0.2;
+            return -controller.getRightY()* 0.2;
         } else{
-            return getPerformByAlliance(controller.getRightY()) * 0.6;
+            return -controller.getRightY() * 0.6;
         }
     }
 
@@ -177,7 +177,7 @@ public class DriverController implements IDDriverController{
     public double getPerformByAlliance(double value) {
         var alliance = DriverStation.getAlliance().isPresent() ? DriverStation.getAlliance().get() : Alliance.Red;
 
-        if(alliance == Alliance.Red){
+        if(alliance == Alliance.Blue){
             return value *= -1;
         } else {
             return value;
