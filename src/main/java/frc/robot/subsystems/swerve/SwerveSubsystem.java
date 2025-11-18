@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve;
 
 import java.io.File;
+import java.net.http.HttpClient.Version;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -24,6 +25,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
@@ -41,6 +45,8 @@ import frc.robot.subsystems.vision.LimelightHelpers;
 import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
+import swervelib.telemetry.SwerveDriveTelemetry;
+import yams.motorcontrollers.SmartMotorControllerConfig.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
@@ -74,6 +80,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   private SwerveDriveOdometry odometry;
   private SwerveDriveKinematics kinematics;
+  private SwerveDriveTelemetry telemetry;
 
   private ChassisSpeeds discretize;
 
@@ -155,6 +162,10 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     );
 
     this.odometry = new SwerveDriveOdometry(kinematics, getHeading(), swerveDrive.getModulePositions());
+
+    this.telemetry = new SwerveDriveTelemetry();
+
+    SwerveDriveTelemetry.verbosity = swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity.INFO;
   }
 
   public static SwerveSubsystem getInstance(){
@@ -174,6 +185,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     if (swerveDrive != null) {
       try {
         odometry.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
+
+        SwerveDriveTelemetry.updateData();
       } catch (Exception e) {
         e.printStackTrace();
         DriverStation.reportError("Erro em updateOdometry(): " + e.getMessage(), false);
@@ -200,8 +213,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     field2d.setRobotPose(getPose());
 
     SmartDashboard.putData(field2d);
-    System.out.println("pose do robo em X: " + odometry.getPoseMeters().getX() * 0.32);
-    System.out.println("\npose do robo em Y: " + odometry.getPoseMeters().getY());
+    // System.out.println("pose do robo em X: " + odometry.getPoseMeters().getX() * 0.32);
+    // System.out.println("\npose do robo em Y: " + odometry.getPoseMeters().getY());
 
     SmartDashboard.putNumber("front right", m2.getAbsolutePosition().getValueAsDouble());
     SmartDashboard.putNumber("front left", m1.getAbsolutePosition().getValueAsDouble());
@@ -252,45 +265,77 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   }
 
     public void setupPathPlanner(){
-        RobotConfig config;
-        try{
-            config = RobotConfig.fromGUISettings();
-            
-            boolean feedforwards = false;
-            
-            AutoBuilder.configure(
-                this::getPose,
-                this::resetOdometryAuto,
-                this::getRobotRelativeSpeeds,
-                (speeds, feedforward) -> {
-                    if (feedforwards) {
-                    swerveDrive.drive(
-                        speeds,
-                        kinematics.toSwerveModuleStates(speeds),
-                        feedforward.linearForces()
-                    );
-                    } else
-                    {
-                    swerveDrive.setChassisSpeeds(speeds);
-                    }}, 
-                    new PPHolonomicDriveController(
-                    new PIDConstants(0.004, 0.0, 0.012), 
-                    new PIDConstants(0.005, 0.0, 0.003)),
-                    config, 
-                    () -> {
-                      //lugar onde esta dando errado
-                        var alliance = DriverStation.getAlliance();
-                        if (alliance.isPresent()) {
-                          return alliance.get() == Alliance.Red;
-                        } 
-                        return false;
-                },
-                this 
-                );
+        // RobotConfig config;
+        // try{
+        //     config = RobotConfig.fromGUISettings();
 
-                } catch (Exception e) {
-                  DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
-                }
+        //     boolean feedforwards = true;
+            
+        //     AutoBuilder.configure(
+        //         this::getPose,
+        //         this::resetOdometryAuto,
+        //         this::getRobotRelativeSpeeds,
+        //         (speeds, feedforward) -> {
+        //             if (feedforwards) {
+        //             swerveDrive.drive(
+        //                 speeds,
+        //                 kinematics.toSwerveModuleStates(speeds),
+        //                 feedforward.linearForces()
+        //             );
+        //             } else
+        //             {
+        //             swerveDrive.setChassisSpeeds(speeds);
+        //             }}, 
+        //             new PPHolonomicDriveController(
+        //             new PIDConstants(0.004, 0.0, 0.012), 
+        //             new PIDConstants(0.005, 0.0, 0.003)),
+        //             config, 
+        //             () -> {
+        //               var alliance = DriverStation.getAlliance();
+        //                 if (alliance.isPresent()) {
+        //                   return alliance.get() == Alliance.Blue;
+        //                 } 
+        //                 return false;
+        //         },
+        //         this 
+        //         );
+
+        //         } catch (Exception e) {
+        //           DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
+        //         }
+
+        RobotConfig config;
+
+      try{
+        config = RobotConfig.fromGUISettings();
+        
+        // Configure AutoBuilder last
+        AutoBuilder.configure(
+            this::getPose, // Robot pose supplier
+            this::resetOdometryAuto, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> driveFieldOriented(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+            new PIDConstants(0.004, 0.0, 0.012), // Translation PID constants
+            new PIDConstants(0.005, 0.0, 0.003) // Rotation PID constants
+            ),
+            config, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+              
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this 
+            );// Reference to this subsystem to set requirements
+          } catch(Exception e){
+            System.out.println(e.getMessage());
+          }
         }
 
   @Override
@@ -318,7 +363,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     if(DriverStation.getAlliance().get() == Alliance.Red){
       return new Pose2d(7.852, 3.827, Rotation2d.fromDegrees(179.93));
     } else{
-      return new Pose2d(10.226, 3.851, Rotation2d.fromDegrees(180));
+      return new Pose2d(10.226, 3.851, Rotation2d.fromDegrees(0));
     }
   }
   
@@ -471,7 +516,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public void resetOdometry(Pose2d pose){
-    odometry.resetPosition(pigeon.getRotation2d(), swerveDrive.getModulePositions(), pose);
+    odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
   }
 
   public Command runResetOdometry(Pose2d pose2d){
@@ -481,8 +526,19 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   }
 
   public void resetOdometryAuto(Pose2d pose){
-    pigeon.setYaw(pose.getRotation().getDegrees());
-    odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
+    if(DriverStation.getAlliance().get() == Alliance.Red){
+      pigeon.setYaw(180);
+      odometry.resetPosition(pose.getRotation().plus(Rotation2d.fromDegrees(180)), swerveDrive.getModulePositions(), pose);
+    } else {
+      pigeon.reset();
+      pigeon.setYaw(pose.getRotation().getDegrees());
+      odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
+      System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+      System.out.println("RESETANDO PRA ALIANCA AZUL");
+      System.out.println("VALOR DO PIGEON: " + pigeon.getYaw().getValueAsDouble());
+      System.out.println("VALOR DA POSE: " + pose.getX() + " " + pose.getY());
+      System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+    }
   }
 
   @Override

@@ -3,6 +3,7 @@ package frc.robot.commands.swerveUtils;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.Components;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 
 public class ResetPigeon extends Command{
@@ -12,7 +13,7 @@ public class ResetPigeon extends Command{
 
     public ResetPigeon(){
         this.subsystem = SwerveSubsystem.getInstance();
-        this.pigeon2 = new Pigeon2(9);
+        this.pigeon2 = new Pigeon2(Components.PIGEON);
         addRequirements(subsystem);
     }
 
@@ -23,8 +24,8 @@ public class ResetPigeon extends Command{
     @Override
     public void execute() {
         try{
+
             pigeon2.reset();
-            subsystem.zeroGyro();
             
         } catch(Exception e){
             System.out.println("erro ao resetar o pigeon");

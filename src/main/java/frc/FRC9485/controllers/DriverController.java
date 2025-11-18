@@ -175,7 +175,7 @@ public class DriverController implements IDDriverController{
 
     @Override
     public double getPerformByAlliance(double value) {
-        var alliance = DriverStation.getAlliance().isPresent() ? DriverStation.getAlliance().get() : Alliance.Red;
+        var alliance = DriverStation.getAlliance().get();
 
         if(alliance == Alliance.Blue){
             return value *= -1;

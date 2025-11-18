@@ -52,7 +52,6 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.schedule();
     }
 
-    if(DriverStation.getAlliance().get() == Alliance.Blue) pigeon2.reset();
   }
 
   @Override
