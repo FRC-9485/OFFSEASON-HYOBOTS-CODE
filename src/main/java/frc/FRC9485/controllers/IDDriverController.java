@@ -10,7 +10,7 @@ public interface IDDriverController {
     
     Trigger x();
     
-    Trigger y();
+    Trigger pov();
 
     Trigger rightBumper();
 

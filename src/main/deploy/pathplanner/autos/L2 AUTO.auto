@@ -9,12 +9,6 @@
           "data": {
             "pathName": "Pontuar L2"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "RESET PIGEON"
-          }
         }
       ]
     }

@@ -1,9 +1,7 @@
 package frc.FRC9485.Autonomous.sequentialCommands;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,10 +9,10 @@ import frc.robot.subsystems.swerve.SwerveSubsystem;
 
 public class ResetOdometry extends Command{
     
-    SwerveSubsystem swerveSubsystem;
+    private SwerveSubsystem swerveSubsystem;
 
-    Pose2d pose;
-    Pigeon2 pigeon;
+    private Pose2d pose;
+    private Pigeon2 pigeon;
 
     public ResetOdometry(){
         this.swerveSubsystem = SwerveSubsystem.getInstance();
@@ -33,15 +31,6 @@ public class ResetOdometry extends Command{
 
     @Override
     public void execute() {
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
-        System.out.println("RESETANDO PIGEOM");
         swerveSubsystem.resetOdometry(pose);
     }
 
@@ -52,14 +41,5 @@ public class ResetOdometry extends Command{
     }
 
     @Override
-    public void end(boolean interrupted) {
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-        System.out.println("ACABOU DE RESETAR");
-    }
+    public void end(boolean interrupted) {}
 }

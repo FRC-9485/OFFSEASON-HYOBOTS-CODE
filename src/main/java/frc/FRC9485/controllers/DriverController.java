@@ -79,8 +79,8 @@ public class DriverController implements IDDriverController{
     }
 
     @Override
-    public Trigger y(){
-        return controller.y();
+    public Trigger pov(){
+        return controller.pov(0);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class DriverController implements IDDriverController{
 
     @Override
     public Trigger alingRobotOnReef() {
-        return controller.pov(0);
+        return controller.y();
     }
 
     @Override

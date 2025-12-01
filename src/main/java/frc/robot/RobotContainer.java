@@ -3,7 +3,6 @@ package frc.robot;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.FRC9485.Autonomous.autonomousChooser.AutoChooser;
 import frc.FRC9485.controllers.DriverController;
@@ -14,8 +13,10 @@ import frc.FRC9485.utils.JoystickChooser.JoystickChooser;
 import frc.robot.Constants.Components;
 import frc.robot.Constants.Controllers;
 import frc.robot.commands.level.intake.SetIntakeSpeed;
-import frc.robot.commands.swerveUtils.AlingToTarget;
 import frc.robot.commands.swerveUtils.ResetPigeon;
+import frc.robot.commands.swerveUtils.TestAlingment;
+import frc.robot.commands.swerveUtils.alinhamento.AlingToTarget;
+import frc.robot.commands.swerveUtils.alinhamento.RightAlingment;
 import frc.robot.subsystems.Mechanism.SuperStructure;
 import frc.robot.subsystems.Mechanism.SuperStructure.StatesToScore;
 import frc.robot.subsystems.Mechanism.intake.IntakeSubsystem;
@@ -79,13 +80,9 @@ public class RobotContainer {
 
   private void configureDriveBindings() {
     
-    driverController.alingRobotOnReef().whileTrue(new AlingToTarget());
+    driverController.alingRobotOnReef().whileTrue(new RightAlingment());
 
     driverController.resetPigeon().onTrue(new ResetPigeon()); 
-
-    driverController.emergencyInvert().onTrue(new InstantCommand(() ->{
-        driverController.Invert();
-      }));
   }
 
   private void configureKeyBoardMechanismBindings(){

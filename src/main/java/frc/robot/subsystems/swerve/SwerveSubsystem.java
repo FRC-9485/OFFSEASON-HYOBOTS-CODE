@@ -198,6 +198,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     if (swerveDrivePoseEstimator != null && pigeon != null && swerveDrive != null) {
       try {
         // swerveDrivePoseEstimator.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
+
+        //pode ser erro do autonomous
         if (limelightConfig != null && limelightConfig.getHasTarget()) {
           Pose2d poseEstimated = LimelightHelpers.getBotPose2d("");
           swerveDrivePoseEstimator.addVisionMeasurement(poseEstimated, Timer.getFPGATimestamp());
@@ -340,7 +342,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public Pose2d getPose(){
-    return odometry.getPoseMeters();
+    return swerveDrivePoseEstimator.getEstimatedPosition();
   }
 
   @Override
@@ -382,6 +384,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
       double yController = Math.pow(Y.getAsDouble(), 3);
       double rotationValue = rotation.getAsDouble();
       Rotation2d rotation2d = Rotation2d.fromDegrees(0.0);
+
       if (swerveDrivePoseEstimator != null) {
         rotation2d = swerveDrivePoseEstimator.getEstimatedPosition().getRotation();
       }
@@ -516,7 +519,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public void resetOdometry(Pose2d pose){
-    odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
+    swerveDrivePoseEstimator.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
   }
 
   public Command runResetOdometry(Pose2d pose2d){
@@ -526,19 +529,21 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   }
 
   public void resetOdometryAuto(Pose2d pose){
-    if(DriverStation.getAlliance().get() == Alliance.Red){
-      pigeon.setYaw(180);
-      odometry.resetPosition(pose.getRotation().plus(Rotation2d.fromDegrees(180)), swerveDrive.getModulePositions(), pose);
-    } else {
-      pigeon.reset();
+    // if(DriverStation.getAlliance().get() == Alliance.Red){
+    //   pigeon.setYaw(180);
+    //   odometry.resetPosition(pose.getRotation().plus(Rotation2d.fromDegrees(180)), swerveDrive.getModulePositions(), pose);
+    // } else {
+    //   pigeon.reset();
+    //   pigeon.setYaw(pose.getRotation().getDegrees());
+    //   odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
+    //   System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+    //   System.out.println("RESETANDO PRA ALIANCA AZUL");
+    //   System.out.println("VALOR DO PIGEON: " + pigeon.getYaw().getValueAsDouble());
+    //   System.out.println("VALOR DA POSE: " + pose.getX() + " " + pose.getY());
+    //   System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+    // }
       pigeon.setYaw(pose.getRotation().getDegrees());
-      odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
-      System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-      System.out.println("RESETANDO PRA ALIANCA AZUL");
-      System.out.println("VALOR DO PIGEON: " + pigeon.getYaw().getValueAsDouble());
-      System.out.println("VALOR DA POSE: " + pose.getX() + " " + pose.getY());
-      System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-    }
+      swerveDrivePoseEstimator.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
   }
 
   @Override
