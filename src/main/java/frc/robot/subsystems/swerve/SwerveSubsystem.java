@@ -1,9 +1,7 @@
 package frc.robot.subsystems.swerve;
 
 import java.io.File;
-import java.net.http.HttpClient.Version;
 import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -25,9 +23,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
@@ -35,7 +30,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.FRC9485.utils.logger.CustomBooleanLog;
 import frc.FRC9485.utils.logger.CustomDoubleLog;
@@ -46,7 +40,6 @@ import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
-import yams.motorcontrollers.SmartMotorControllerConfig.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
@@ -185,7 +178,6 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     if (swerveDrive != null) {
       try {
         odometry.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
-
         SwerveDriveTelemetry.updateData();
       } catch (Exception e) {
         e.printStackTrace();
@@ -198,10 +190,11 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     if (swerveDrivePoseEstimator != null && pigeon != null && swerveDrive != null) {
       try {
         // swerveDrivePoseEstimator.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
-
         //pode ser erro do autonomous
         if (limelightConfig != null && limelightConfig.getHasTarget()) {
           Pose2d poseEstimated = LimelightHelpers.getBotPose2d("");
+          swerveDrivePoseEstimator.update(pigeon.getRotation2d(), swerveDrive.getModulePositions());
+          
           swerveDrivePoseEstimator.addVisionMeasurement(poseEstimated, Timer.getFPGATimestamp());
         }
       } catch (Exception e) {
@@ -308,7 +301,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
         RobotConfig config;
 
-      try{
+       try{
         config = RobotConfig.fromGUISettings();
         
         // Configure AutoBuilder last
@@ -323,10 +316,6 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
             ),
             config, // The robot configuration
             () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-              
               var alliance = DriverStation.getAlliance();
               if (alliance.isPresent()) {
                 return alliance.get() == DriverStation.Alliance.Red;
@@ -338,11 +327,11 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
           } catch(Exception e){
             System.out.println(e.getMessage());
           }
-        }
+    }
 
   @Override
   public Pose2d getPose(){
-    return swerveDrivePoseEstimator.getEstimatedPosition();
+    return swerveDrive.getPose();
   }
 
   @Override
@@ -529,21 +518,9 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   }
 
   public void resetOdometryAuto(Pose2d pose){
-    // if(DriverStation.getAlliance().get() == Alliance.Red){
-    //   pigeon.setYaw(180);
-    //   odometry.resetPosition(pose.getRotation().plus(Rotation2d.fromDegrees(180)), swerveDrive.getModulePositions(), pose);
-    // } else {
-    //   pigeon.reset();
-    //   pigeon.setYaw(pose.getRotation().getDegrees());
-    //   odometry.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
-    //   System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-    //   System.out.println("RESETANDO PRA ALIANCA AZUL");
-    //   System.out.println("VALOR DO PIGEON: " + pigeon.getYaw().getValueAsDouble());
-    //   System.out.println("VALOR DA POSE: " + pose.getX() + " " + pose.getY());
-    //   System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-    // }
-      pigeon.setYaw(pose.getRotation().getDegrees());
-      swerveDrivePoseEstimator.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
+    // pigeon.setYaw(pose.getRotation().getDegrees());
+    // swerveDrivePoseEstimator.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
+    swerveDrive.resetOdometry(pose);
   }
 
   @Override

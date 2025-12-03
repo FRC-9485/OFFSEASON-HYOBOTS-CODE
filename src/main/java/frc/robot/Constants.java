@@ -124,7 +124,7 @@ public class Constants{
   }
 
   public static final class Components{
-    public static final String AUTO = "L2 AUTO";
+    public static final String AUTO = "TESTE ODOMETRIA";
     public static final String LIMELIGHT = "limelight";
     public static final int PIGEON = 9;
   }

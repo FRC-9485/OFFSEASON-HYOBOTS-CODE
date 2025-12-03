@@ -122,7 +122,7 @@ public class DriverController implements IDDriverController{
     @Override
     public double getLeftX(){
         if(TurboMode()){
-            return getPerformByAlliance(controller.getLeftX());
+            return getPerformByAlliance(controller.getLeftX() > 0 ? (controller.getRightTriggerAxis() * 0.6) + controller.getLeftX() * 0.6 : controller.getLeftX());
         } else if(slowMode()){
             return getPerformByAlliance(controller.getLeftX()) * 0.2;
         } else{
@@ -133,9 +133,9 @@ public class DriverController implements IDDriverController{
     @Override
     public double getLeftY(){
         if(TurboMode()){
-            return getPerformByAlliance(controller.getLeftY());
+            return getPerformByAlliance(controller.getLeftY() > 0 ? (controller.getRightTriggerAxis() * 0.6) + controller.getLeftY() * 0.6 : controller.getLeftY());
         } else if(slowMode()){
-            return getPerformByAlliance(controller.getLeftY())* 0.2;
+            return getPerformByAlliance(controller.getLeftY()) * 0.2;
         } else{
             return getPerformByAlliance(controller.getLeftY()) * 0.6;
         }
@@ -144,22 +144,22 @@ public class DriverController implements IDDriverController{
     @Override
     public double getRightX(){
         if(TurboMode()){
-            return -controller.getRightX() ;
+            return getPerformByAlliance(controller.getRightX() > 0 ? (controller.getRightTriggerAxis() * 0.6) + controller.getRightX() * 0.6 : controller.getRightX());
         } else if(slowMode()){
-            return -controller.getRightX() * 0.2;
+            return controller.getRightX() * 0.2;
         } else{
-            return -controller.getRightX()  * 0.6;
+            return controller.getRightX()  * 0.6;
         }
     }
 
     @Override
     public double getRightY(){
         if(TurboMode()){
-            return -controller.getRightY();
+            return getPerformByAlliance(controller.getRightY() > 0 ? (controller.getRightTriggerAxis() * 0.6) + controller.getRightY() * 0.6 : controller.getRightY());
         } else if(slowMode()){
-            return -controller.getRightY()* 0.2;
+            return controller.getRightY() * 0.2;
         } else{
-            return -controller.getRightY() * 0.6;
+            return controller.getRightY() * 0.6;
         }
     }
 
@@ -179,8 +179,10 @@ public class DriverController implements IDDriverController{
 
         if(alliance == Alliance.Blue){
             return value *= -1;
+        } else if(value == 0){
+            return 0;
         } else {
-            return value;
+            return value *= 1;
         }
     }
 
