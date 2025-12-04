@@ -1,5 +1,7 @@
 package frc.robot.subsystems.swerve;
 
+import static edu.wpi.first.units.Units.Meter;
+
 import java.io.File;
 import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -26,7 +28,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -259,7 +260,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     return this.swerveDrivePoseEstimator;
   }
 
-    public void setupPathPlanner(){
+  public void setupPathPlanner(){
         // RobotConfig config;
         // try{
         //     config = RobotConfig.fromGUISettings();
@@ -311,8 +312,8 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
             this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             (speeds, feedforwards) -> driveFieldOriented(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-            new PIDConstants(0.004, 0.0, 0.012), // Translation PID constants
-            new PIDConstants(0.005, 0.0, 0.003) // Rotation PID constants
+            new PIDConstants(0.017, 0.0, 0.00), // Translation PID constants
+            new PIDConstants(0.00, 0.0, 0.000) // Rotation PID constants
             ),
             config, // The robot configuration
             () -> {
@@ -331,11 +332,15 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
 
   @Override
   public Pose2d getPose(){
-    return swerveDrive.getPose();
+    SmartDashboard.putNumber("SwerveAuto/Pose X", swerveDrive.getPose().getMeasureX().in(Meter));
+    SmartDashboard.putNumber("SwerveAuto/Pose Y", swerveDrive.getPose().getMeasureY().in(Meter));
+    return swerveDrivePoseEstimator.getEstimatedPosition();
   }
 
   @Override
   public ChassisSpeeds getRobotRelativeSpeeds(){
+    SmartDashboard.putNumber("SwerveAuto/Velocidade Swerve X", swerveDrive.getRobotVelocity().vxMetersPerSecond);
+    SmartDashboard.putNumber("SwerveAuto/Velocidade Swerve Y", swerveDrive.getRobotVelocity().vyMetersPerSecond);
     return swerveDrive.getRobotVelocity();
   }
 
@@ -350,13 +355,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
     return alternDriveCommand(X, Y, rotation, true); // Usa malha fechada por padrão
   }
 
-  public Pose2d getSidePose(){
-    if(DriverStation.getAlliance().get() == Alliance.Red){
-      return new Pose2d(7.852, 3.827, Rotation2d.fromDegrees(179.93));
-    } else{
-      return new Pose2d(10.226, 3.851, Rotation2d.fromDegrees(0));
-    }
-  }
+
   
   /**
    * Comando de direção com opção de escolher entre malha aberta ou fechada
@@ -520,7 +519,7 @@ public class SwerveSubsystem extends SubsystemBase implements SwerveIO{
   public void resetOdometryAuto(Pose2d pose){
     // pigeon.setYaw(pose.getRotation().getDegrees());
     // swerveDrivePoseEstimator.resetPosition(pose.getRotation(), swerveDrive.getModulePositions(), pose);
-    swerveDrive.resetOdometry(pose);
+    swerveDrivePoseEstimator.resetPose(pose);
   }
 
   @Override

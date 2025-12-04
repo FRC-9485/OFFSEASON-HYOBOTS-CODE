@@ -60,5 +60,4 @@ public interface SwerveIO {
 
     Command putSwerveIn0();
 
-    Pose2d getSidePose();
 }

@@ -155,7 +155,10 @@ public class DriverController implements IDDriverController{
     @Override
     public double getRightY(){
         if(TurboMode()){
-            return getPerformByAlliance(controller.getRightY() > 0 ? (controller.getRightTriggerAxis() * 0.6) + controller.getRightY() * 0.6 : controller.getRightY());
+            return getPerformByAlliance(
+                controller.getRightY() > 0 ? (controller.getRightTriggerAxis() * 0.6) + 
+                controller.getRightY() * 0.6 : controller.getRightY()
+            );
         } else if(slowMode()){
             return controller.getRightY() * 0.2;
         } else{

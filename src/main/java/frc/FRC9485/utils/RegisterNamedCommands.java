@@ -9,7 +9,7 @@ import frc.FRC9485.Autonomous.sequentialCommands.CatchCoral;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL2;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL3;
 import frc.FRC9485.Autonomous.sequentialCommands.PutCoralOnL4;
-import frc.FRC9485.Autonomous.sequentialCommands.ResetOdometry;
+// import frc.FRC9485.Autonomous.sequentialCommands.ResetOdometry;
 import frc.FRC9485.Autonomous.sequentialCommands.ThrowAndCatchCoral;
 import frc.robot.commands.level.intake.SetIntakeSpeed;
 import frc.robot.commands.swerveUtils.ResetPigeon;
@@ -81,7 +81,7 @@ public class RegisterNamedCommands {
 
     private void configureSwerveAutoCommands(SwerveSubsystem swerve, LimelightConfig limelightConfig, ElevatorSubsystem elevatorSubsystem){
 
-        NamedCommands.registerCommand("RESET PIGEON", new ResetOdometry());
+        // NamedCommands.registerCommand("RESET PIGEON", new ResetOdometry());
 
         NamedCommands.registerCommand("ALINHAMENTO", new AlingToTarget());
 
